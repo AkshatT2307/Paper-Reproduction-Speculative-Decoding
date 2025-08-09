@@ -1,4 +1,4 @@
-import torch as nn
+import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import yaml
@@ -13,7 +13,7 @@ with open("config.yaml", "r") as f:
 
 
 # Loading model and tokenizer
-target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],torch_dtype=nn.float16).to("cuda").eval()
+target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],torch_dtype=torch.float16).to("cuda").eval()
 tokenizer = AutoTokenizer.from_pretrained(config['models']['tokenizer'])
 
 
@@ -50,7 +50,7 @@ def auto_regressive(prompt):
     while(x.shape[1]<T):
         
         probs=F.softmax(target_model(x).logits,dim=2)
-        x=nn.concat((x,nn.argmax(probs[:,-1,:],dim=1).reshape(1,1)),dim=1)
+        x=torch.concat((x,torch.argmax(probs[:,-1,:],dim=1).reshape(1,1)),dim=1)
 
         if(x[0,-1]==eos_id):
             torch.cuda.synchronize() if device=="cuda" else None
@@ -63,4 +63,5 @@ def auto_regressive(prompt):
     t2=time.time()
     inference_speed=(x.shape[1]-seq_len)/(t2-t1)
     return x,inference_speed
+
 
