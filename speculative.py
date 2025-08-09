@@ -31,7 +31,7 @@ eos_id=tokenizer.eos_token_id
 
 
 # SPECULATIVE SAMPLING FUNCTION (can only used for batch_size==1)
-
+@torch.no_grad()
 def speculative_sampling(prompt):
     '''This function takes the raw prompt and then generates the output through speculative sampling along with the acceptance rate and inference speed'''
     
@@ -48,6 +48,7 @@ def speculative_sampling(prompt):
     
 
     # Starting time
+    torch.cuda.synchronize() if device=="cuda" else None
     t1=time.time()
 
 
@@ -82,6 +83,7 @@ def speculative_sampling(prompt):
 
                 # emergency landing if EOS token is found
                 if(x[0,n+i]==eos_id):
+                    torch.cuda.synchronize() if device=="cuda" else None
                     t2=time.time()
                     acceptance_rate=drafts_accepted*100/(gamma*no_of_passes)
                     inference_speed=(prefix.shape[1]-seq_len)/(t2-t1)
@@ -116,6 +118,7 @@ def speculative_sampling(prompt):
 
 
     # this is assuming no EOS token falls in the generation
+    torch.cuda.synchronize() if device=="cuda" else None
     t2=time.time()
     acceptance_rate=drafts_accepted*100/(gamma*no_of_passes)
     inference_speed=(prefix.shape[1]-seq_len)/(t2-t1)
@@ -123,5 +126,6 @@ def speculative_sampling(prompt):
 
     # returning the outputs
     return prefix,acceptance_rate,inference_speed
+
 
     
