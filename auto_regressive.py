@@ -28,7 +28,7 @@ gamma = config['generation']['gamma']
 eos_id=tokenizer.eos_token_id
 
 
-
+@torch.no_grad()
 def auto_regressive(prompt):
     '''Generating response from target model'''
 
@@ -42,6 +42,7 @@ def auto_regressive(prompt):
 
 
     # Starting time
+    torch.cuda.synchronize() if device=="cuda" else None
     t1=time.time()
     x=prefix
 
@@ -52,11 +53,14 @@ def auto_regressive(prompt):
         x=nn.concat((x,nn.argmax(probs[:,-1,:],dim=1).reshape(1,1)),dim=1)
 
         if(x[0,-1]==eos_id):
+            torch.cuda.synchronize() if device=="cuda" else None
             t2=time.time()
             inference_speed=(x.shape[1]-seq_len)/(t2-t1)
             return x,inference_speed
 
-    
+
+    torch.cuda.synchronize() if device=="cuda" else None
     t2=time.time()
     inference_speed=(x.shape[1]-seq_len)/(t2-t1)
     return x,inference_speed
+
