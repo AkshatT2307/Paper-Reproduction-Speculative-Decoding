@@ -1,0 +1,12 @@
+models:
+  draft_model: "mia-llm/gpt-neo-125m-xsum-roya"
+  target_model: "mia-llm/gpt-neo-1.3B-xsum-roya"
+  tokenizer: "EleutherAI/gpt-neo-125m"
+
+generation:
+  max_length: 40
+  gamma: 5  # number of tokens to speculate
+
+
+dataset:
+  size: 10
