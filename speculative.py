@@ -1,4 +1,4 @@
-import torch as nn
+import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import time
@@ -13,8 +13,8 @@ with open("config.yaml", "r") as f:
 
 
 # setting up models and tokenizer
-draft_model = AutoModelForCausalLM.from_pretrained(config['models']['draft_model'],torch_dtype=nn.float16).to("cuda").eval()
-target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],torch_dtype=nn.float16).to("cuda").eval()
+draft_model = AutoModelForCausalLM.from_pretrained(config['models']['draft_model'],torch_dtype=torch.float16).to("cuda").eval()
+target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],torch_dtype=torch.float16).to("cuda").eval()
 tokenizer = AutoTokenizer.from_pretrained(config['models']['tokenizer'])
 
 
@@ -43,7 +43,7 @@ def speculative_sampling(prompt):
     # noting down some parameters
     seq_len=prefix.shape[1]
     T=seq_len+max_len
-    no_of_passes=0
+    drafts_proposed=0
     drafts_accepted=0
     
 
@@ -55,15 +55,14 @@ def speculative_sampling(prompt):
 
     while(prefix.shape[1]<T):
 
-        no_of_passes+=1
-
         x=prefix
         n=prefix.shape[1]
 
         # generating /gamma tokens from draft model
         for _ in range(gamma):
             q=F.softmax(draft_model(x).logits,dim=2)
-            x=nn.concat((x,nn.argmax(q[:,-1,:],dim=1).reshape(1,1)),dim=1)
+            x=torch.concat((x,torch.argmax(q[:,-1,:],dim=1).reshape(1,1)),dim=1)
+            drafts_proposed+=1
 
 
         # generating logits from target model in one pass
@@ -73,11 +72,11 @@ def speculative_sampling(prompt):
         # iterating on tokens to reject or accept them
         all_accept=True
         for i in range(gamma):
-            prob=nn.rand(1).to('cuda')
+            prob=torch.rand(1).to('cuda')
 
             # accepting the draft
             if(prob<=min(1,p[:,n-1+i,:][0,n+i]/q[:,n-1+i,:][0,n+i])):
-                prefix=nn.concat((prefix,x[0,n+i].reshape(1,1)),dim=1)
+                prefix=torch.concat((prefix,x[0,n+i].reshape(1,1)),dim=1)
                 drafts_accepted+=1
                 
 
@@ -85,7 +84,7 @@ def speculative_sampling(prompt):
                 if(x[0,n+i]==eos_id):
                     torch.cuda.synchronize() if device=="cuda" else None
                     t2=time.time()
-                    acceptance_rate=drafts_accepted*100/(gamma*no_of_passes)
+                    acceptance_rate=drafts_accepted*100/drafts_proposed
                     inference_speed=(prefix.shape[1]-seq_len)/(t2-t1)
                     return prefix,acceptance_rate,inference_speed
 
@@ -101,12 +100,12 @@ def speculative_sampling(prompt):
 
 
                 # scaling and taking norm
-                d=nn.where(d>0,d,0)
-                d_sum=nn.sum(d,dim=1)
-                d=d/d_sum
+                d=torch.where(d>0,d,0)
+                d_sum=torch.sum(d,dim=1)
+                d=d/(d_sum+1e-10)
 
 
-                prefix=nn.concat((prefix,nn.argmax(d).reshape(1,1)),dim=1)
+                prefix=torch.concat((prefix,torch.argmax(d).reshape(1,1)),dim=1)
 
                 break
 
@@ -114,13 +113,13 @@ def speculative_sampling(prompt):
 
         # if all drafts are accepted, sampling a token from the target distribution
         if(all_accept==True):
-            prefix=nn.concat((prefix,nn.argmax(p[:,-1,:]).reshape(1,1)),dim=1)
+            prefix=torch.concat((prefix,torch.argmax(p[:,-1,:]).reshape(1,1)),dim=1)
 
 
     # this is assuming no EOS token falls in the generation
     torch.cuda.synchronize() if device=="cuda" else None
     t2=time.time()
-    acceptance_rate=drafts_accepted*100/(gamma*no_of_passes)
+    acceptance_rate=drafts_accepted*100/drafts_proposed
     inference_speed=(prefix.shape[1]-seq_len)/(t2-t1)
 
 
@@ -129,3 +128,4 @@ def speculative_sampling(prompt):
 
 
     
+
