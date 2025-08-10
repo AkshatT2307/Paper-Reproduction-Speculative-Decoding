@@ -11,7 +11,6 @@ with open("Paper-Reproduction-Speculative-Decoding/config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Loading model and tokenizer
 target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],torch_dtype=torch.float16).to("cuda").eval()

@@ -26,11 +26,7 @@ xsum = load_dataset("xsum", split=f"test[:{config['dataset']['size']}]",trust_re
 tokenizer = AutoTokenizer.from_pretrained(config['models']['tokenizer'])
 
 
-# original_summary=[]
-# speculative_summary=[]
-# acceptance_rate=0
-# target_speed=0
-# speculative_speed=0
+
 results = []
 
 for sample in tqdm(xsum):
@@ -43,13 +39,11 @@ for sample in tqdm(xsum):
     speculative_ids,acc_rate,speculative_sp=speculative_sampling(prompt)
 
 
-    # acceptance_rate+=acc_rate
-    # target_speed+=target_sp
-    # speculative_speed+=speculative_sp
-
 
     original_summary=tokenizer.decode(target_ids[0], skip_special_tokens=True)[n:]
     speculative_summary=tokenizer.decode(speculative_ids[0], skip_special_tokens=True)[n:]
+
+
 
     results.append({
     "prompt": sample,
@@ -63,11 +57,6 @@ for sample in tqdm(xsum):
 
 
 
-# target_speed/=config['dataset']['size']
-# speculative_speed/=config['dataset']['size']
-# acceptance_rate/=config['dataset']['size']
-
-# print(target_speed,speculative_speed,acceptance_rate)
 
 
 with open("results.jsonl", "a", encoding="utf-8") as f:

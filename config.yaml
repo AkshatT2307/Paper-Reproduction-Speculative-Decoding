@@ -1,12 +1,20 @@
 models:
-  draft_model: "mia-llm/gpt-neo-125m-xsum-roya"
-  target_model: "mia-llm/gpt-neo-1.3B-xsum-roya"
-  tokenizer: "EleutherAI/gpt-neo-125m"
+
+  # for Experiment 2
+  draft_model: "deepseek-ai/deepseek-coder-1.3b-base"
+  target_model: "deepseek-ai/deepseek-coder-6.7b-base"
+  tokenizer: "deepseek-ai/deepseek-coder-1.3b-base"
+
+  # for Experiment 1
+  # draft_model: "mia-llm/gpt-neo-125m-xsum-roya"
+  # target_model: "mia-llm/gpt-neo-1.3B-xsum-roya"
+  # tokenizer: "EleutherAI/gpt-neo-125m"
 
 generation:
-  max_length: 40
+  max_length: 256
   gamma: 5  # number of tokens to speculate
 
 
 dataset:
-  size: 10
+  size: 100
+
