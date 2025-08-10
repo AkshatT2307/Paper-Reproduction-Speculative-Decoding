@@ -7,9 +7,11 @@ import yaml
 
 
 # reading config files
-with open("config.yaml", "r") as f:
+with open("Paper-Reproduction-Speculative-Decoding/config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 # setting up models and tokenizer
@@ -114,7 +116,7 @@ def speculative_sampling(prompt):
         # if all drafts are accepted, sampling a token from the target distribution
         if(all_accept==True):
             prefix=torch.concat((prefix,torch.argmax(p[:,-1,:]).reshape(1,1)),dim=1)
-
+    
 
     # this is assuming no EOS token falls in the generation
     torch.cuda.synchronize() if device=="cuda" else None
@@ -125,7 +127,7 @@ def speculative_sampling(prompt):
 
     # returning the outputs
     return prefix,acceptance_rate,inference_speed
-
+    
 
     
 
