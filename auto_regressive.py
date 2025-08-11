@@ -13,7 +13,7 @@ with open("Paper-Reproduction-Speculative-Decoding/config.yaml", "r") as f:
 
 
 # Loading model and tokenizer
-target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],load_in_8bit=True,torch_dtype=torch.float16).to("cuda").eval()
+target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],load_in_8bit=True,torch_dtype=torch.float16,device_map="auto" ).eval()
 tokenizer = AutoTokenizer.from_pretrained(config['models']['tokenizer'])
 
 
