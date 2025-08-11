@@ -16,7 +16,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # setting up models and tokenizer
 draft_model = AutoModelForCausalLM.from_pretrained(config['models']['draft_model'],torch_dtype=torch.float16).to("cuda").eval()
-target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],torch_dtype=torch.float16).to("cuda").eval()
+target_model = AutoModelForCausalLM.from_pretrained(config['models']['target_model'],load_in_8bit=True,torch_dtype=torch.float16).to("cuda").eval()
 tokenizer = AutoTokenizer.from_pretrained(config['models']['tokenizer'])
 
 
