@@ -23,6 +23,7 @@ max_len = config['generation']['max_length']
 gamma = config['generation']['gamma']
 
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # noting <EOS> token id to end inference when found
 eos_id=tokenizer.eos_token_id
