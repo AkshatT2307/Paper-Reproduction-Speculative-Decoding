@@ -19,7 +19,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # loading dataset
 humanEval = load_dataset("openai/openai_humaneval",trust_remote_code=True)["test"]
-
+humanEval=humanEval.select(range(100))
 
 
 # setting up tokenizer
