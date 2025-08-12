@@ -10,6 +10,7 @@ models:
   # target_model: "mia-llm/gpt-neo-1.3B-xsum-roya"
   # tokenizer: "EleutherAI/gpt-neo-125m"
 
+
 generation:
   max_length: 256
   gamma: 5  # number of tokens to speculate

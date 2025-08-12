@@ -59,7 +59,7 @@ for sample in tqdm(humanEval):
 
 
 
-with open("results.jsonl", "a", encoding="utf-8") as f:
+with open("Paper-Reproduction-Speculative-Decoding\\Results\\results1.jsonl", "a", encoding="utf-8") as f:
     for r in results:
         f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
